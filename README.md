@@ -1,0 +1,48 @@
+# Restaurant Trainer
+
+Browser game that teaches new line cooks to build menu items: **Tutorial → Training → Quiz**, plus a (simulated) owner dashboard.
+
+## Run it
+Double-click `index.html`. No install, no build step, no server.
+(Plain HTML + CSS + JavaScript. Progress is saved in the browser's localStorage.)
+
+## Files
+| File | What it is |
+|---|---|
+| `js/data.js` | **The menu.** Ingredients, drawers, recipes, quiz settings, demo employees. Edit this to change food. |
+| `js/art.js` | All ingredient drawings (SVG shapes): bird's-eye view + side view. |
+| `js/chef.js` | Chef Marco (SVG): the mentor on the right who gives feedback in a speech bubble; face and spatula change with the mood. |
+| `js/store.js` | Fake accounts/results (localStorage). Swap for a real backend in V2. |
+| `js/app.js` | Screens + game logic (tutorial, training feedback, quiz, scoring, owner page). |
+| `css/style.css` | Look and feel, drawer and layer animations. |
+
+## Game rules (as decided)
+- Bird's-eye view while building; **Close the bun** flips to a side view.
+- Drawers stacked vertically, open **upward**, one open at a time. Click to place (no drag).
+- Every step is **one ingredient**; order must match the recipe exactly.
+- Tutorial: *Next step* does it for you (or click the glowing item). Back = undo.
+- Training: wrong picks are rejected with the reason; 2-level hints; undo allowed.
+- Quiz: 1 ticket, 2 items (owner can change), timed, no hints, **no undo**, results only at the end.
+- Scoring (placeholder): layer-by-layer match vs. expected stack, averaged across items. Pass mark 90%.
+
+## Menu: changes from the Kitchen Training Manual
+The manual was used as a guideline. What changed and why:
+
+| # | Change | Why |
+|---|---|---|
+| 1 | **Combined steps split into single steps** (e.g. "Bottom Bun + Special Sauce", "Beef Patty & Cheese", "Tomato & Lettuce", "Bun, Honey Mustard, Pickles"). | Each click = one step, so tutorial, training feedback and grading all line up 1:1. |
+| 2 | **"Sauced Top Bun" = a top-bun sauce step, then Close the bun.** | Keeps the order exact without a separate "sauced bun" ingredient. The sauce step is labeled *(top bun)*. |
+| 3 | **Grilled Chicken: Provolone is a required step** after the chicken (manual says "(& Provolone)"). | Ambiguous in the manual; required makes it testable. Can be removed by a "NO PROVOLONE" ticket. |
+| 4 | **Crispy Chicken: 3 pickle chips.** | Manual gives no count; matched the Classic's 3. **Confirm with owner.** |
+| 5 | **Shredded Lettuce and Leaf Lettuce are separate ingredients.** | Manual uses both on different items; picking the wrong one is a realistic mistake to train. |
+| 6 | **Sesame Bun added** to the bread drawer. | Gives the bread drawer a third option; used by the new Bacon BBQ Burger. |
+| 7 | **Added: Bacon BBQ Burger** (sesame, BBQ, beef, cheddar, bacon ×2, red onion, BBQ top). | Same rules as the manual (cheese on hot patty, toppings glued by cheese, sauce both sides). Adds bacon, cheddar, BBQ. |
+| 8 | **Added: Spicy Crispy Chicken** (potato bun, spicy mayo, leaf lettuce, crispy chicken, pepper jack, jalapeños, spicy mayo top). | Deliberately *similar* to the Crispy Chicken but built differently: tests real recipe knowledge, not guessing. |
+| 9 | **Quiz ticket changes** (NO / EXTRA) defined per item. | Lets the quiz check modifications vs. mistakes. Owner-editable later. |
+
+Menu items, ingredients, art and ticket changes all live in `js/data.js` / `js/art.js`, so swapping items is a data edit, not a code change.
+
+## Known limits / next steps
+- Scoring is positional: one missing layer shifts the rest and costs more than it should. Fine as a placeholder.
+- Owner page is read-only and uses demo data; registration, menu editing and real accounts are V2.
+- Not yet tested on phones/tablets (layout is responsive, but verify before the demo).
