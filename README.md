@@ -46,3 +46,18 @@ Menu items, ingredients, art and ticket changes all live in `js/data.js` / `js/a
 - Scoring is positional: one missing layer shifts the rest and costs more than it should. Fine as a placeholder.
 - Owner page is read-only and uses demo data; registration, menu editing and real accounts are V2.
 - Not yet tested on phones/tablets (layout is responsive, but verify before the demo).
+
+## Versions (snapshots)
+Every change is saved as a git commit, and each milestone gets a tag (`v0.3-chef`, …).
+
+| Want to… | Command |
+|---|---|
+| See all snapshots | `git log --oneline --decorate` |
+| Try an old version (look only) | `git switch --detach v0.3-chef`, then `git switch main` to come back |
+| Undo one change, keep everything after it | `git revert <commit>` |
+| Grab one file from an old version | `git restore --source v0.3-chef js/chef.js` |
+| Go fully back to a version | `git reset --hard v0.3-chef` (later work stays reachable through its tag) |
+
+| Tag | What it contains |
+|---|---|
+| `v0.3-chef` | Full game + Chef Marco feedback mentor, plain-English messages. First snapshot (earlier steps were built before versioning). |
