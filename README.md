@@ -58,7 +58,7 @@ Import it on the owner page. Expected: **Sunrise Smash Burger** added under *Bur
 ## Known limits / next steps
 - Scoring is positional: one missing layer shifts the rest and costs more than it should. Fine as a placeholder.
 - Owner page is read-only and uses demo data; registration, menu editing and real accounts are V2.
-- Not yet tested on phones/tablets (layout is responsive, but verify before the demo).
+- Phones and tablets: checked in Chrome's device emulation (360×780 phone, 768×1024 tablet), not yet on a real device. Phone kitchen order: header → recipe steps as numbered chips (or the ticket) → Chef Marco beside his bubble → board → actions → cabinet. Tablet: ticket/recipe beside the chef, cabinet beside the board. Touch screens get 44px+ tap targets. Desktop layout is unchanged.
 
 ## Versions (snapshots)
 Every change is saved as a git commit, and each milestone gets a tag (`v0.3-chef`, …).
@@ -81,3 +81,4 @@ Every change is saved as a git commit, and each milestone gets a tag (`v0.3-chef
 | `v0.6.2-pass-mark` | Owner pass mark can be any value 0–100% (was locked to 50–100). |
 | `v0.6.3-ocr-fix` | Photo import reads menus with dotted leaders (sparse-text OCR mode). Adds `test-assets/sample-menu.png` (Harbor Street Grill). |
 | `v0.6.4-burger-menu` | Sample menu image is burgers only (one burger, no sides or drinks). |
+| `v0.7-mobile` | Phone and tablet layouts: compact kitchen (board and next action on the first screen), tablet two-column kitchen, 44px touch targets, no sideways scrolling at 360px. |
