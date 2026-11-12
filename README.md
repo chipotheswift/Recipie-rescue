@@ -24,6 +24,7 @@ Double-click `index.html`. No install, no build step, no server.
 - Training: wrong picks are rejected with the reason; 2-level hints; undo allowed.
 - Quiz: 1 ticket, 2 items (owner can change), timed, no hints, **no undo**, results only at the end.
 - Scoring (placeholder): layer-by-layer match vs. expected stack, averaged across items. Pass mark 90%.
+- Flashcards: per item or whole menu (shuffled). One card per step ("After X, what goes on next?" → answer + why) plus a "full build" card. *Still learning* sends the card to the back of the deck. Generated from `RECIPES`, so they can't drift from the game.
 
 ## Menu: changes from the Kitchen Training Manual
 The manual was used as a guideline. What changed and why:
@@ -61,3 +62,4 @@ Every change is saved as a git commit, and each milestone gets a tag (`v0.3-chef
 | Tag | What it contains |
 |---|---|
 | `v0.3-chef` | Full game + Chef Marco feedback mentor, plain-English messages. First snapshot (earlier steps were built before versioning). |
+| `v0.4-flashcards` | Adds flashcards (per item or whole menu, keyboard shortcuts, retry queue). |

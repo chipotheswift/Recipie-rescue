@@ -272,6 +272,39 @@ button { font: inherit; color: inherit; }
 }
 .glow-soft { box-shadow: 0 3px 0 var(--ink), 0 0 0 4px #ffd84d88; }
 
+/* ============ Flashcards ============ */
+.fc-cta { padding: 20px 22px; display: grid; gap: 12px; }
+.fc-cta p { color: var(--muted); margin-top: 4px; }
+.chip.strong { background: var(--ink); color: #fff; border-color: var(--ink); }
+.fc-progress { height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 8px 0 4px; }
+.fc-progress span { display: block; height: 100%; background: var(--green); transition: width .3s; }
+.fc-count { text-align: center; }
+.fc {
+  display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer;
+  perspective: 1200px; font: inherit; color: inherit; text-align: left; animation: fcIn .3s ease-out;
+}
+.fc-inner { position: relative; display: grid; min-height: 300px; transition: transform .5s cubic-bezier(.3, 1.2, .5, 1); transform-style: preserve-3d; }
+.fc.flipped .fc-inner { transform: rotateY(180deg); }
+.fc-face {
+  grid-area: 1 / 1; display: grid; align-content: center; gap: 14px; padding: 26px 28px;
+  background: var(--paper); border: 3px solid var(--ink); border-radius: 22px; box-shadow: 0 6px 0 var(--ink);
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+}
+.fc-face .eyebrow { position: absolute; top: 18px; left: 28px; right: 28px; }
+.fc-back { transform: rotateY(180deg); background: #ecf9e7; }
+.fc-q { font-size: 24px; line-height: 1.3; text-align: center; }
+.fc-tip { text-align: center; color: var(--muted); font-size: 14px; }
+.fc-ans { display: flex; gap: 18px; align-items: center; }
+.fc-icon svg { width: 96px; height: 96px; }
+.fc-name { font-size: 24px; font-weight: 700; }
+.fc-why { color: var(--muted); margin-top: 4px; font-style: italic; }
+.fc-back .steps { margin-top: 18px; }
+.fc-actions { justify-content: center; margin-top: 16px; }
+.fc-actions .btn { min-width: 160px; }
+.fc-summary { padding: 28px; text-align: center; display: grid; gap: 10px; justify-items: center; }
+.fc-big { font-size: 56px; font-weight: 700; line-height: 1; }
+@keyframes fcIn { from { transform: translateX(30px); opacity: 0; } }
+
 /* ============ Results ============ */
 .score-row { display: flex; gap: 16px; flex-wrap: wrap; }
 .score-big { background: var(--paper); border: 3px solid var(--ink); border-radius: 20px; padding: 14px 26px; display: grid; text-align: center; box-shadow: 0 5px 0 var(--ink); }
@@ -327,8 +360,12 @@ button { font: inherit; color: inherit; }
   .progress { grid-template-columns: repeat(2, 1fr); row-gap: 10px; }
   .progress div:nth-child(3) { border-left: 0; }
   .owner-recipe { grid-template-columns: 1fr; }
+  .fc-q, .fc-name { font-size: 20px; }
+  .fc-ans { flex-direction: column; text-align: center; }
+  .fc-actions .btn { min-width: 0; flex: 1; }
   .owner-menu { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+.narrow.fc-page { max-width: 660px; }

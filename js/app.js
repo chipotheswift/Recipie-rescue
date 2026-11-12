@@ -1,6 +1,6 @@
 // =============================================================
 //  APP — screens and game logic. Plain JS, no framework.
-//  Screens: home · login · hub · kitchen · results · owner
+//  Screens: home · login · hub · kitchen · results · owner · flashcards
 //  Kitchen modes: tutorial · training · quiz (same kitchen, different help)
 // =============================================================
 
@@ -13,6 +13,7 @@
     k: null,          // kitchen state
     result: null,     // last quiz result
     ownerOpen: null,  // expanded employee row on owner page
+    fc: null,         // flashcard session
     timer: null,
   };
 
@@ -347,6 +348,17 @@
         <button class="btn primary big" data-act="quiz">Start quiz</button>
       </section>
 
+      <section class="card fc-cta">
+        <div>
+          <h2>🃏 Flashcards</h2>
+          <p>Quick recall: what goes on next, and why. Built from the same recipes as the game.</p>
+        </div>
+        <div class="chips">
+          <button class="chip strong" data-act="fc-start" data-arg="all">Whole menu (shuffled)</button>
+          ${RECIPES.map(r => `<button class="chip" data-act="fc-start" data-arg="${r.id}">${esc(r.name)}</button>`).join('')}
+        </div>
+      </section>
+
       <div class="golden"><b>Line cook golden rule:</b> ${esc(RESTAURANT.goldenRule)}</div>
 
       <h2 class="section-h">Menu</h2>
@@ -604,9 +616,135 @@
   }
 
   // =============================================================
+  //  FLASHCARDS — generated from RECIPES, so they always match the game
+  // =============================================================
+  const stepLabel = s => ingName(s.ing) + (s.top ? ' (top bun)' : '') + ((s.qty || 1) > 1 ? ` ×${s.qty}` : '');
+
+  function recipeCards(r) {
+    const n = r.steps.length;
+    const cards = r.steps.map((s, i) => ({
+      recipe: r.name,
+      tag: `Step ${i + 1} of ${n}`,
+      q: i === 0
+        ? `What goes down first on the <b>${esc(r.name)}</b>?`
+        : `After <b>${esc(stepLabel(r.steps[i - 1]))}</b>, what goes on next?`,
+      ing: s.ing,
+      a: stepLabel(s),
+      why: s.note || '',
+    }));
+    cards.push({
+      recipe: r.name,
+      tag: 'Full build',
+      q: `Name all ${n} steps of the <b>${esc(r.name)}</b>, bottom to top.`,
+      list: r.steps.map(stepLabel),
+    });
+    return cards;
+  }
+
+  function startFlashcards(deck) {
+    let cards, title;
+    if (deck === 'all') {
+      cards = RECIPES.flatMap(recipeCards).sort(() => Math.random() - 0.5);
+      title = 'Whole menu';
+    } else {
+      const r = recipe(deck);
+      cards = recipeCards(r);
+      title = r.name;
+    }
+    S.fc = { deck, title, queue: cards, total: cards.length, firstTry: 0, seen: new Set(), flipped: false };
+    go('flashcards');
+  }
+
+  function fcFlip() {
+    const f = S.fc;
+    if (!f || !f.queue.length) return;
+    f.flipped = !f.flipped;
+    $app.querySelector('.fc')?.classList.toggle('flipped', f.flipped);
+    $app.querySelectorAll('.fc-grade').forEach(b => { b.disabled = !f.flipped; });
+  }
+
+  function fcGrade(knew) {
+    const f = S.fc;
+    if (!f || !f.flipped) return;
+    const card = f.queue.shift();
+    if (knew) { if (!f.seen.has(card)) f.firstTry++; }
+    else f.queue.push(card); // still learning: comes back at the end
+    f.seen.add(card);
+    f.flipped = false;
+    render();
+  }
+
+  function vFlashcards() {
+    const f = S.fc;
+    const done = f.total - f.queue.length;
+    const header = `
+      <header class="topbar">
+        <div><div class="eyebrow">Flashcards</div><h1>${esc(f.title)}</h1></div>
+        <button class="btn ghost" data-act="go" data-arg="hub">✕ Done</button>
+      </header>
+      <div class="fc-progress"><span style="width:${(done / f.total) * 100}%"></span></div>`;
+
+    if (!f.queue.length) {
+      return `
+      <main class="narrow fc-page">
+        ${header}
+        <section class="card fc-summary">
+          <div class="fc-big">${f.firstTry}/${f.total}</div>
+          <p>cards known on the first try.</p>
+          <div class="row">
+            <button class="btn primary" data-act="fc-start" data-arg="${esc(f.deck)}">↻ Study again</button>
+            ${f.deck !== 'all' ? `<button class="btn" data-act="training" data-arg="${esc(f.deck)}">Practice it in Training →</button>` : ''}
+          </div>
+        </section>
+      </main>`;
+    }
+
+    const c = f.queue[0];
+    const back = c.list
+      ? `<ol class="steps compact">${c.list.map(l => `<li>${esc(l)}</li>`).join('')}</ol>`
+      : `<div class="fc-ans">
+           <div class="fc-icon">${ART.icon(c.ing)}</div>
+           <div><div class="fc-name">${esc(c.a)}</div>${c.why ? `<p class="fc-why">${esc(c.why)}</p>` : ''}</div>
+         </div>`;
+    return `
+    <main class="narrow fc-page">
+      ${header}
+      <p class="muted fc-count">${f.queue.length} card${f.queue.length > 1 ? 's' : ''} left</p>
+      <button class="fc ${f.flipped ? 'flipped' : ''}" data-act="fc-flip" aria-label="Flip card">
+        <div class="fc-inner">
+          <div class="fc-face fc-front">
+            <div class="eyebrow">${esc(c.recipe)} · ${esc(c.tag)}</div>
+            <div class="fc-q">${c.q}</div>
+            <div class="fc-tip">Tap to flip</div>
+          </div>
+          <div class="fc-face fc-back">
+            <div class="eyebrow">${esc(c.recipe)} · ${esc(c.tag)}</div>
+            ${back}
+          </div>
+        </div>
+      </button>
+      <div class="row fc-actions">
+        <button class="btn fc-grade" data-act="fc-grade" data-arg="0" ${f.flipped ? '' : 'disabled'}>↺ Still learning</button>
+        <button class="btn primary fc-grade" data-act="fc-grade" data-arg="1" ${f.flipped ? '' : 'disabled'}>✓ Got it</button>
+      </div>
+      <p class="fine">Keys: <b>Space</b> flip · <b>←</b> still learning · <b>→</b> got it</p>
+    </main>`;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (S.screen !== 'flashcards' || e.target.closest?.('input, select, textarea')) return;
+    if (e.key === ' ' || e.key === 'Enter') {
+      if (e.target.closest?.('button')) return; // a focused button already clicks on Space/Enter
+      e.preventDefault(); fcFlip();
+    }
+    else if (e.key === 'ArrowRight') fcGrade(true);
+    else if (e.key === 'ArrowLeft') fcGrade(false);
+  });
+
+  // =============================================================
   //  RENDER + EVENTS
   // =============================================================
-  const VIEWS = { home: vHome, login: vLogin, hub: vHub, kitchen: vKitchen, results: vResults, owner: vOwner };
+  const VIEWS = { home: vHome, login: vLogin, hub: vHub, kitchen: vKitchen, results: vResults, owner: vOwner, flashcards: vFlashcards };
 
   function render() {
     $app.innerHTML = VIEWS[S.screen]();
@@ -651,6 +789,9 @@
     'next-item': () => nextItem(),
     submit: () => submitQuiz(),
     exit: () => go('hub'),
+    'fc-start': deck => startFlashcards(deck),
+    'fc-flip': () => fcFlip(),
+    'fc-grade': v => fcGrade(v === '1'),
     'owner-row': n => { S.ownerOpen = S.ownerOpen === n ? null : n; render(); },
     reset: () => { Store.reset(); S.ownerOpen = null; render(); },
   };
