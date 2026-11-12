@@ -638,7 +638,7 @@
       <h2 class="section-h">Quiz settings</h2>
       <form id="settings-form" class="card form inline">
         <label>Items per ticket <input type="number" name="itemsPerTicket" min="1" max="5" value="${set.itemsPerTicket}"></label>
-        <label>Pass mark (%) <input type="number" name="passThreshold" min="50" max="100" value="${set.passThreshold}"></label>
+        <label>Pass mark (%) <input type="number" name="passThreshold" min="0" max="100" value="${set.passThreshold}"></label>
         <button class="btn primary" type="submit">Save</button>
         <span id="saved" class="muted"></span>
       </form>
@@ -1025,10 +1025,10 @@
       if (text) runImport(async () => text);
     }
     if (e.target.id === 'settings-form') {
-      const clamp = (v, lo, hi, d) => Math.min(hi, Math.max(lo, parseInt(v, 10) || d));
+      const clamp = (v, lo, hi, d) => { const n = parseInt(v, 10); return Number.isNaN(n) ? d : Math.min(hi, Math.max(lo, n)); };
       Store.setSettings({
         itemsPerTicket: clamp(fd.get('itemsPerTicket'), 1, 5, 2),
-        passThreshold: clamp(fd.get('passThreshold'), 50, 100, 90),
+        passThreshold: clamp(fd.get('passThreshold'), 0, 100, 90), // owner's call: any value 0–100
       });
       render();
       const s = document.getElementById('saved');

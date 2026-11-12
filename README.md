@@ -28,7 +28,7 @@ Double-click `index.html`. No install, no build step, no server.
 - Tutorial: *Next step* does it for you (or click the glowing item). Back = undo.
 - Training: wrong picks are rejected with the reason; 2-level hints; undo allowed.
 - Quiz: 1 ticket, 2 items (owner can change), timed, no hints, **no undo**, results only at the end.
-- Scoring (placeholder): layer-by-layer match vs. expected stack, averaged across items. Pass mark 90%.
+- Scoring (placeholder): layer-by-layer match vs. expected stack, averaged across items. Pass mark defaults to 90%; the owner can set anything from 0 to 100% and that setting is final.
 - Flashcards: per item or whole menu (shuffled). One card per step ("After X, what goes on next?" → answer + why) plus a "full build" card. *Still learning* sends the card to the back of the deck. Generated from `RECIPES`, so they can't drift from the game.
 - Certificate: passing the quiz at the pass mark (90%) earns one: printable / Save as PDF, with name, restaurant, score, time, date, owner signature line and certificate number. The owner sees **🎓 Certified · Ready to work**. A certificate is kept for good: a later failed quiz or new menu items do **not** remove it.
 - Owner dashboard: per employee tutorials, training, quiz attempts, latest score/time, status, certificate (with link), flashcard decks finished, most-missed ingredients, items not yet trained.
@@ -74,3 +74,4 @@ Every change is saved as a git commit, and each milestone gets a tag (`v0.3-chef
 | `v0.5-menu-import` | Owner menu import from photo/PDF/text, standard build order, owner reorder + reset. |
 | `v0.6-recipe-rescue` | Renamed to Recipe Rescue (logo, tab icon/title, app bar, footer). Quiz pass earns a printable certificate; owner sees Certified · Ready to work; flashcard decks tracked. |
 | `v0.6.1-cert-stays` | Certificates stay valid when new menu items are added (no re-certify). |
+| `v0.6.2-pass-mark` | Owner pass mark can be any value 0–100% (was locked to 50–100). |
