@@ -14,8 +14,17 @@
     result: null,     // last quiz result
     ownerOpen: null,  // expanded employee row on owner page
     fc: null,         // flashcard session
+    imp: { status: '', error: false, busy: false, last: null }, // menu import
     timer: null,
   };
+
+  // Imported menu items live in the Store; mirror them into RECIPES so
+  // tutorial, training, quiz and flashcards all pick them up automatically.
+  function syncImported() {
+    for (let i = RECIPES.length - 1; i >= 0; i--) if (RECIPES[i].imported) RECIPES.splice(i, 1);
+    RECIPES.push(...Store.imported());
+  }
+  syncImported();
 
   // ---------- helpers ----------
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -599,20 +608,107 @@
         <span id="saved" class="muted"></span>
       </form>
 
-      <h2 class="section-h">Menu <span class="muted small">(read-only for now; editing comes in V2)</span></h2>
+      <h2 class="section-h">Import a menu</h2>
+      <section class="card import-card">
+        <p>Upload a <b>photo</b> or <b>PDF</b> of a menu, or paste its text. Each burger or sandwich is added with a
+          <b>standard build order</b> right away. It only uses ingredients the menu names, plus a bun and a protein.
+          Change the order below if your kitchen builds it differently.</p>
+        <div class="import-grid">
+          <label class="drop">
+            <input type="file" id="imp-file" accept="image/*,application/pdf" ${S.imp.busy ? 'disabled' : ''}>
+            <span class="drop-icon">📷</span>
+            <b>Choose a photo or PDF</b>
+            <span class="muted small">Read on this device. Nothing is uploaded.</span>
+          </label>
+          <form id="import-form" class="form">
+            <label>Or paste menu text
+              <textarea name="text" rows="5" placeholder="BURGERS&#10;Smokehouse Burger  $12.99&#10;Cheddar, bacon, BBQ sauce, onion on a brioche bun"></textarea>
+            </label>
+            <button class="btn" type="submit" ${S.imp.busy ? 'disabled' : ''}>Import text</button>
+          </form>
+        </div>
+        <p id="imp-status" class="imp-status ${S.imp.error ? 'bad' : ''}" aria-live="polite">${esc(S.imp.status)}</p>
+        ${S.imp.last && S.imp.last.skipped.length ? `<details class="muted small"><summary>Skipped ${S.imp.last.skipped.length} line${S.imp.last.skipped.length > 1 ? 's' : ''}</summary>
+          <ul>${S.imp.last.skipped.map(s => `<li>${esc(s.name)}: ${esc(s.reason)}</li>`).join('')}</ul></details>` : ''}
+      </section>
+
+      <h2 class="section-h">Menu <span class="muted small">(imported items can be reordered)</span></h2>
       <section class="owner-menu">
         ${RECIPES.map(r => `
-          <article class="card owner-recipe">
+          <article class="card owner-recipe ${r.imported ? 'is-imported' : ''}">
             <div class="menu-art small">${ART.side(makeItem(r.id).expected, true)}</div>
             <div>
               <h3>${esc(r.name)}</h3>
-              <ol class="steps compact">${expand(r.steps.map(s => ({ ...s, qty: s.qty || 1 }))).map(l => `<li>${esc(layerLabel(l))}</li>`).join('')}<li>Close the bun</li></ol>
-              <div class="muted small">Ticket changes: ${r.mods.map(m => esc(modText(m))).join(' · ')}</div>
+              ${r.imported ? `<div class="row tight">
+                  <span class="badge ${r.edited ? 'on' : 'auto'}">${r.edited ? '✓ Adjusted by owner' : '⚙ Auto-generated'}</span>
+                  <span class="muted small">${esc(r.station)}</span></div>
+                <ol class="steps compact edit">${r.steps.map((s, i) => {
+                  const fixed = i === 0 || s.top;
+                  const canUp = !fixed && i > 1, canDown = !fixed && i + 1 < r.steps.length && !r.steps[i + 1].top;
+                  return `<li><span>${esc(stepLabel(s))}</span>
+                    <span class="step-btns">
+                      <button class="mini" data-act="imp-move" data-arg="${r.id}|${i}|-1" ${canUp ? '' : 'disabled'} aria-label="Move up">↑</button>
+                      <button class="mini" data-act="imp-move" data-arg="${r.id}|${i}|1" ${canDown ? '' : 'disabled'} aria-label="Move down">↓</button>
+                      <button class="mini" data-act="imp-drop" data-arg="${r.id}|${i}" ${i === 0 ? 'disabled' : ''} aria-label="Remove step">✕</button>
+                    </span></li>`;
+                }).join('')}<li>Close the bun</li></ol>
+                <div class="row tight">
+                  ${r.edited ? `<button class="btn ghost small" data-act="imp-reset" data-arg="${r.id}">↺ Reset to standard</button>` : ''}
+                  <button class="btn ghost small" data-act="imp-remove" data-arg="${r.id}">Remove item</button>
+                </div>`
+              : `<ol class="steps compact">${expand(r.steps.map(s => ({ ...s, qty: s.qty || 1 }))).map(l => `<li>${esc(layerLabel(l))}</li>`).join('')}<li>Close the bun</li></ol>`}
+              <div class="muted small">Ticket changes: ${r.mods.length ? r.mods.map(m => esc(modText(m))).join(' · ') : 'none'}</div>
             </div>
           </article>`).join('')}
       </section>
       <div class="row center"><button class="btn ghost small" data-act="reset">Reset demo data</button></div>
     </main>`;
+  }
+
+  // ---------- menu import ----------
+  function saveImported(list) { Store.setImported(list); syncImported(); }
+
+  // Any owner change marks the item "Adjusted by owner" and drops ticket
+  // changes that point at a removed ingredient.
+  function editImported(id, fn) {
+    const list = Store.imported(), r = list.find(x => x.id === id);
+    if (!r) return;
+    fn(r);
+    r.edited = true;
+    r.mods = r.mods.filter(m => r.steps.some(s => s.ing === m.ing));
+    saveImported(list);
+    render();
+  }
+
+  function setImpStatus(msg, error = false) {
+    S.imp.status = msg; S.imp.error = error;
+    const el = document.getElementById('imp-status');
+    if (el) { el.textContent = msg; el.classList.toggle('bad', error); }
+  }
+
+  async function runImport(getText) {
+    if (S.imp.busy) return;
+    S.imp.busy = true; S.imp.last = null;
+    setImpStatus('Starting…');
+    render();
+    try {
+      const text = await getText(msg => setImpStatus(msg));
+      const res = Importer.build(text, RECIPES.map(r => r.name));
+      saveImported([...Store.imported(), ...res.items]);
+      S.imp.last = res;
+      const n = res.items.length;
+      const dupes = res.skipped.filter(s => s.reason === 'already on the menu').length;
+      setImpStatus(n
+        ? `Added ${n} item${n > 1 ? 's' : ''}: ${res.items.map(r => r.name).join(', ')}. They're live for employees now.`
+        : dupes
+          ? `Found ${dupes} item${dupes > 1 ? 's' : ''}, but ${dupes > 1 ? 'they are' : 'it is'} already on the menu. Nothing new to add.`
+          : 'No burgers or sandwiches found. Try a clearer photo, or paste the text.', !n && !dupes);
+    } catch (err) {
+      setImpStatus(err.message || 'Something went wrong reading that file.', true);
+    } finally {
+      S.imp.busy = false;
+      if (S.screen === 'owner') render();
+    }
   }
 
   // =============================================================
@@ -793,7 +889,20 @@
     'fc-flip': () => fcFlip(),
     'fc-grade': v => fcGrade(v === '1'),
     'owner-row': n => { S.ownerOpen = S.ownerOpen === n ? null : n; render(); },
-    reset: () => { Store.reset(); S.ownerOpen = null; render(); },
+    reset: () => { Store.reset(); syncImported(); S.ownerOpen = null; S.imp = { status: '', error: false, busy: false, last: null }; render(); },
+    'imp-move': arg => {
+      const [id, i, d] = arg.split('|'), a = +i, b = a + +d;
+      editImported(id, r => { [r.steps[a], r.steps[b]] = [r.steps[b], r.steps[a]]; });
+    },
+    'imp-drop': arg => {
+      const [id, i] = arg.split('|');
+      editImported(id, r => { r.steps.splice(+i, 1); });
+    },
+    'imp-reset': id => {
+      const list = Store.imported().map(r => r.id === id ? Importer.restandard(r) : r);
+      saveImported(list); render();
+    },
+    'imp-remove': id => { saveImported(Store.imported().filter(r => r.id !== id)); render(); },
   };
 
   $app.addEventListener('click', e => {
@@ -802,12 +911,23 @@
     ACTIONS[el.dataset.act]?.(el.dataset.arg);
   });
 
+  $app.addEventListener('change', e => {
+    if (e.target.id === 'imp-file' && e.target.files[0]) {
+      const file = e.target.files[0];
+      runImport(progress => Importer.readFile(file, progress));
+    }
+  });
+
   $app.addEventListener('submit', e => {
     e.preventDefault();
     const fd = new FormData(e.target);
     if (e.target.id === 'login-form') {
       const name = String(fd.get('name')).trim();
       if (name) ACTIONS.login(name);
+    }
+    if (e.target.id === 'import-form') {
+      const text = String(fd.get('text') || '').trim();
+      if (text) runImport(async () => text);
     }
     if (e.target.id === 'settings-form') {
       const clamp = (v, lo, hi, d) => Math.min(hi, Math.max(lo, parseInt(v, 10) || d));

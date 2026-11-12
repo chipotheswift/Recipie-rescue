@@ -12,6 +12,7 @@ Double-click `index.html`. No install, no build step, no server.
 | `js/data.js` | **The menu.** Ingredients, drawers, recipes, quiz settings, demo employees. Edit this to change food. |
 | `js/art.js` | All ingredient drawings (SVG shapes): bird's-eye view + side view. |
 | `js/chef.js` | Chef Marco (SVG): the mentor on the right who gives feedback in a speech bubble; face and spatula change with the mood. |
+| `js/importer.js` | Menu import: reads a photo (Tesseract.js) or PDF (pdf.js) in the browser, then rules turn it into recipes in the standard build order. Libraries download only on first use. |
 | `js/store.js` | Fake accounts/results (localStorage). Swap for a real backend in V2. |
 | `js/app.js` | Screens + game logic (tutorial, training feedback, quiz, scoring, owner page). |
 | `css/style.css` | Look and feel, drawer and layer animations. |
@@ -25,6 +26,7 @@ Double-click `index.html`. No install, no build step, no server.
 - Quiz: 1 ticket, 2 items (owner can change), timed, no hints, **no undo**, results only at the end.
 - Scoring (placeholder): layer-by-layer match vs. expected stack, averaged across items. Pass mark 90%.
 - Flashcards: per item or whole menu (shuffled). One card per step ("After X, what goes on next?" → answer + why) plus a "full build" card. *Still learning* sends the card to the back of the deck. Generated from `RECIPES`, so they can't drift from the game.
+- Menu import (owner page): photo, PDF or pasted text. Each burger/sandwich goes live immediately in a **standard build order** (bun → bottom sauce → protein → cheese → bacon → toppings → top sauce), using only ingredients the menu names plus a bun and protein. Marked *Auto-generated* until the owner reorders or removes a step (*Adjusted by owner*; *Reset to standard* undoes it). Ingredients not in the ingredient bank (e.g. ranch) are left out. Items already on the menu are skipped. Works offline after the first import; nothing is uploaded.
 
 ## Menu: changes from the Kitchen Training Manual
 The manual was used as a guideline. What changed and why:
@@ -63,3 +65,4 @@ Every change is saved as a git commit, and each milestone gets a tag (`v0.3-chef
 |---|---|
 | `v0.3-chef` | Full game + Chef Marco feedback mentor, plain-English messages. First snapshot (earlier steps were built before versioning). |
 | `v0.4-flashcards` | Adds flashcards (per item or whole menu, keyboard shortcuts, retry queue). |
+| `v0.5-menu-import` | Owner menu import from photo/PDF/text, standard build order, owner reorder + reset. |

@@ -369,3 +369,29 @@ button { font: inherit; color: inherit; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 .narrow.fc-page { max-width: 660px; }
+
+/* ============ Menu import ============ */
+.import-card { padding: 20px 22px; display: grid; gap: 14px; }
+.import-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; align-items: stretch; }
+.drop {
+  position: relative; display: grid; place-items: center; align-content: center; gap: 4px; text-align: center;
+  padding: 18px; border: 3px dashed var(--line); border-radius: 18px; background: #fffaf0; cursor: pointer;
+}
+.drop:hover { border-color: var(--ink); }
+.drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.drop-icon { font-size: 34px; }
+.import-card textarea { width: 100%; font: inherit; font-size: 14px; padding: 10px; border: 2px solid var(--line); border-radius: 12px; resize: vertical; }
+.imp-status { min-height: 1.4em; font-weight: 600; }
+.imp-status.bad { color: var(--red-dark); }
+.badge.auto { background: #e8eefc; color: #2f5aa8; }
+.row.tight { gap: 6px; margin: 4px 0; }
+.owner-recipe.is-imported { border-color: #a9c2ee; }
+.steps.edit li { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.step-btns { display: flex; gap: 3px; flex: none; }
+.mini {
+  width: 26px; height: 26px; border-radius: 7px; border: 2px solid var(--line); background: var(--paper);
+  font-size: 13px; line-height: 1; cursor: pointer; display: grid; place-items: center; padding: 0;
+}
+.mini:hover:not(:disabled) { border-color: var(--ink); }
+.mini:disabled { opacity: .3; cursor: default; }
+@media (max-width: 760px) { .import-grid { grid-template-columns: 1fr; } }

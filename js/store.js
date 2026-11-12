@@ -52,6 +52,10 @@ const Store = (() => {
       return out;
     },
 
+    // Menu items imported by the owner (photo / PDF / pasted text).
+    imported: () => JSON.parse(JSON.stringify(data.imported || [])),
+    setImported(list) { data.imported = list; save(); },
+
     reset() { data = blank(); save(); },
   };
 })();
