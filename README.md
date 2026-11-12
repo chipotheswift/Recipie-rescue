@@ -52,8 +52,8 @@ The manual was used as a guideline. What changed and why:
 Menu items, ingredients, art and ticket changes all live in `js/data.js` / `js/art.js`, so swapping items is a data edit, not a code change.
 
 ## Test assets
-`test-assets/sample-menu.png` (made from `sample-menu.html`): a fictional menu with one burger plus a side and a drink.
-Import it on the owner page. Expected: **Sunrise Smash Burger** added under *Burgers* as Potato Bun > Beef Patty > American Cheese > Red Onion Ring > Dill Pickle Chip ×3; French Fries and Fresh Lemonade skipped (not a burger or sandwich).
+`test-assets/sample-menu.png` (made from `sample-menu.html`): a fictional menu with a single burger.
+Import it on the owner page. Expected: **Sunrise Smash Burger** added under *Burgers* as Potato Bun > Beef Patty > American Cheese > Red Onion Ring > Dill Pickle Chip ×3.
 
 ## Known limits / next steps
 - Scoring is positional: one missing layer shifts the rest and costs more than it should. Fine as a placeholder.
@@ -79,4 +79,5 @@ Every change is saved as a git commit, and each milestone gets a tag (`v0.3-chef
 | `v0.6-recipe-rescue` | Renamed to Recipe Rescue (logo, tab icon/title, app bar, footer). Quiz pass earns a printable certificate; owner sees Certified · Ready to work; flashcard decks tracked. |
 | `v0.6.1-cert-stays` | Certificates stay valid when new menu items are added (no re-certify). |
 | `v0.6.2-pass-mark` | Owner pass mark can be any value 0–100% (was locked to 50–100). |
-| `v0.6.3-ocr-fix` | Photo import reads menus with dotted leaders (sparse-text OCR mode). Adds `test-assets/sample-menu.png` (Harbor Street Grill: 1 burger + fries + lemonade). |
+| `v0.6.3-ocr-fix` | Photo import reads menus with dotted leaders (sparse-text OCR mode). Adds `test-assets/sample-menu.png` (Harbor Street Grill). |
+| `v0.6.4-burger-menu` | Sample menu image is burgers only (one burger, no sides or drinks). |
