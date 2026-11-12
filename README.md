@@ -54,7 +54,7 @@ Menu items, ingredients, art and ticket changes all live in `js/data.js` / `js/a
 ## Known limits / next steps
 - Scoring is positional: one missing layer shifts the rest and costs more than it should. Fine as a placeholder.
 - Owner page is read-only and uses demo data; registration, menu editing and real accounts are V2.
-- Not yet tested on phones/tablets (layout is responsive, but verify before the demo).
+- Phones and tablets: checked in Chrome's device emulation (360×780 phone, 768×1024 tablet), not yet on a real device. Phone kitchen order: header → recipe steps as numbered chips (or the ticket) → Chef Marco beside his bubble → board → actions → cabinet. Tablet: ticket/recipe beside the chef, cabinet beside the board. Touch screens get 44px+ tap targets. Desktop layout is unchanged.
 
 ## Versions (snapshots)
 Every change is saved as a git commit, and each milestone gets a tag (`v0.3-chef`, …).
@@ -75,3 +75,4 @@ Every change is saved as a git commit, and each milestone gets a tag (`v0.3-chef
 | `v0.6-recipe-rescue` | Renamed to Recipe Rescue (logo, tab icon/title, app bar, footer). Quiz pass earns a printable certificate; owner sees Certified · Ready to work; flashcard decks tracked. |
 | `v0.6.1-cert-stays` | Certificates stay valid when new menu items are added (no re-certify). |
 | `v0.6.2-pass-mark` | Owner pass mark can be any value 0–100% (was locked to 50–100). |
+| `v0.7-mobile` | Phone and tablet layouts: compact kitchen (board and next action on the first screen), tablet two-column kitchen, 44px touch targets, no sideways scrolling at 360px. |

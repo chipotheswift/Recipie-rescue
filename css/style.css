@@ -456,3 +456,113 @@ button { font: inherit; color: inherit; }
   .cert-page { padding: 0; max-width: none; }
   .certificate { box-shadow: none; aspect-ratio: auto; height: 180mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ============ Mobile & tablet (≤980px). Desktop is unchanged. ============ */
+@media (max-width: 980px) {
+  /* Kitchen: let the recipe/ticket and Chef Marco be placed separately. */
+  .kitchen .panel { display: contents; }
+  .kitchen .recipe-card, .kitchen .ticket { grid-area: recipe; }
+  .kitchen .chef { grid-area: chef; }
+  .kitchen { grid-template-areas: "top" "recipe" "chef" "station" "cab"; gap: 12px; padding: 10px 16px 24px; min-height: 0; }
+
+  /* Recipe steps become compact numbered chips so the board stays near the top. */
+  .kitchen .recipe-card { padding: 10px 14px; gap: 6px; }
+  .kitchen .recipe-card h2 { font-size: 18px; }
+  /* Actions right under the board; the placed-ingredient chips follow. */
+  .station .board { order: 1; }
+  .station .actions { order: 2; }
+  .station .stack { order: 3; }
+  .kitchen .recipe-card .steps {
+    counter-reset: step; list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; font-size: 12.5px;
+  }
+  .kitchen .recipe-card .steps li {
+    counter-increment: step; padding: 2px 8px 2px 3px; border: 1.5px solid var(--line); border-radius: 999px;
+    background: var(--paper); display: inline-flex; gap: 4px; align-items: center; line-height: 1.3;
+  }
+  .kitchen .recipe-card .steps li::before {
+    content: counter(step); min-width: 17px; height: 17px; border-radius: 999px; display: grid; place-items: center;
+    background: var(--line); font-size: 10.5px; font-weight: 700;
+  }
+  .kitchen .recipe-card .steps li.done { opacity: .55; }
+  .kitchen .recipe-card .steps li.current { background: #fff0c9; border-color: var(--mustard); }
+  .kitchen .recipe-card .steps li.current::before { background: var(--mustard); }
+
+  /* Compact paper ticket. */
+  .kitchen .ticket { padding: 10px 14px 16px; border-top-width: 6px; }
+  .kitchen .ticket-h { font-size: 19px; }
+  .kitchen .ticket-rule { margin: 6px 0; }
+  .kitchen .t-item { padding: 4px 6px; }
+  .kitchen .t-name { font-size: 15px; }
+
+  /* Chef Marco: smaller, beside his bubble. */
+  .chef { gap: 8px; }
+  .chef-figure { width: 84px; }
+  .chef-name { display: none; }
+  .chef-bubble { font-size: 14.5px; padding: 10px 13px 11px; border-radius: 18px; }
+  .chef-bubble::after { bottom: 22px; width: 18px; height: 18px; right: -11px; }
+
+  .k-top { gap: 8px; }
+  .k-title { font-size: 17px; gap: 6px; flex-wrap: wrap; justify-content: center; text-align: center; }
+  .k-logo .logo-ring { width: 24px; height: 24px; }
+  .timer { font-size: 19px; padding: 3px 10px; }
+  .board { width: min(100%, 340px); padding: 20px; border-radius: 26px; }
+  .cabinet { padding: 8px; }
+}
+
+/* Tablet: recipe and chef side by side, cabinet beside the board. */
+@media (min-width: 640px) and (max-width: 980px) {
+  .kitchen {
+    grid-template-columns: minmax(230px, 280px) 1fr;
+    grid-template-areas: "top top" "recipe chef" "cab station";
+  }
+  .kitchen .chef { align-self: end; }
+  .cabinet { justify-content: flex-end; align-self: start; }
+  .board { width: min(100%, 400px); }
+}
+
+/* Phone */
+@media (max-width: 560px) {
+  .wide, .narrow { padding-top: 16px; }
+  h1 { font-size: 26px; }
+  .board { width: min(100%, 290px); padding: 16px; }
+  .board::after { right: 14px; width: 10px; height: 38px; }
+  .board-empty { font-size: 16px; }
+  .chef-figure { width: 70px; }
+  .kitchen .recipe-card .eyebrow { display: none; } /* the header already names the item */
+  .kitchen .recipe-card h2 { display: none; } /* same name is in the header */
+  .actions .btn { flex: 1 1 auto; }
+  .actions .btn.big { padding: 11px 16px; font-size: 16px; }
+  .k-top .btn { padding: 6px 10px; white-space: nowrap; }
+  .appbar-org { font-size: 12.5px; }
+  .home { padding-top: 24px; gap: 20px; }
+  .hero-burger { width: 170px; }
+  .quiz-cta, .fc-cta, .import-card, .cert-banner { padding: 16px; }
+  .quiz-cta .btn { width: 100%; }
+  .form.inline input { width: 100%; }
+  .form.inline label { flex: 1 1 130px; }
+  .compare { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .layers { font-size: 13px; }
+  .layers th, .layers td { padding: 4px 5px; }
+  .score-big { padding: 10px 18px; }
+  .score-big b { font-size: 34px; }
+  .fc-face { padding: 40px 18px 20px; }
+  .fc-inner { min-height: 260px; }
+  .fc-page { overflow-x: clip; }
+  .cert-page { padding: 12px 16px 28px; }
+  .cert-top { flex-direction: column; gap: 6px; }
+  .cert-sign > div { min-width: 0; flex: 1 1 140px; }
+  .owner-recipe { padding: 12px; }
+  .steps.edit li { flex-wrap: wrap; }
+}
+
+/* Touch screens: every control at least 44px. */
+@media (pointer: coarse) {
+  .chip { min-height: 44px; }
+  .btn.small { min-height: 44px; }
+  .mini { width: 44px; height: 44px; font-size: 16px; }
+  .link { min-height: 44px; padding: 10px 2px; }
+  .form input, .form select, .import-card textarea { min-height: 44px; }
+  .appbar-brand { min-height: 44px; }
+  .drawer-front { min-height: 52px; }
+  .ing { min-height: 64px; }
+}
