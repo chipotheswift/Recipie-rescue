@@ -89,7 +89,9 @@
   function startKitchen(mode, recipeId) {
     const settings = Store.settings();
     let items;
-    if (mode === 'quiz') {
+    if (mode === 'quiz' && TEST_QUIZ_RECIPE && recipe(TEST_QUIZ_RECIPE)) {
+      items = [makeItem(TEST_QUIZ_RECIPE, [])]; // test mode: same single item every time (see data.js)
+    } else if (mode === 'quiz') {
       // Shuffle so a ticket gets different menu items (repeats only if items > menu size)
       const deck = [...RECIPES].sort(() => Math.random() - 0.5);
       items = Array.from({ length: settings.itemsPerTicket }, (_, i) => {
@@ -376,7 +378,9 @@
       <section class="quiz-cta card">
         <div>
           <h2>🎫 Line-ready quiz</h2>
-          <p>1 ticket · ${set.itemsPerTicket} item${set.itemsPerTicket > 1 ? 's' : ''} · timed · no hints · pass mark ${set.passThreshold}%</p>
+          <p>${TEST_QUIZ_RECIPE && recipe(TEST_QUIZ_RECIPE)
+            ? `Test mode: 1 ${esc(recipe(TEST_QUIZ_RECIPE).name)}`
+            : `1 ticket · ${set.itemsPerTicket} item${set.itemsPerTicket > 1 ? 's' : ''}`} · timed · no hints · pass mark ${set.passThreshold}%</p>
         </div>
         <button class="btn primary big" data-act="quiz">Start quiz</button>
       </section>

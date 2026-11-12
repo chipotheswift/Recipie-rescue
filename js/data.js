@@ -208,6 +208,10 @@ const DEFAULT_SETTINGS = {
   modChance: 0.6,      // chance each ticket item has a customer change
 };
 
+// TESTING: every quiz ticket is this one item, with no customer changes.
+// Set to null to go back to random tickets (items per ticket + changes).
+const TEST_QUIZ_RECIPE = 'grilled_chicken_sandwich';
+
 // Fake employees so the owner dashboard has something to show.
 const ALL_IDS = RECIPES.map(r => r.id);
 const DUMMY_EMPLOYEES = {
