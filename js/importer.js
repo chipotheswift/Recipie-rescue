@@ -209,6 +209,10 @@ const Importer = (() => {
     const worker = await Tesseract.createWorker('eng', 1, {
       logger: m => { if (m.status === 'recognizing text') onProgress(`Reading the photo… ${Math.round(m.progress * 100)}%`); },
     });
+    // Menus are laid out, not paragraphs. Tesseract.js's default (one uniform
+    // block) silently drops lines with dotted leaders like "Burger ...... $9.99".
+    // Sparse-text mode keeps every line and puts each price right after its item.
+    await worker.setParameters({ tessedit_pageseg_mode: '11' });
     try { return (await worker.recognize(canvas)).data.text; }
     finally { await worker.terminate(); }
   }

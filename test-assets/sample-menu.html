@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sample Menu (test asset)</title>
+<!-- Test asset for Recipe Rescue's menu import. Rendered to sample-menu.png.
+     Fictional restaurant. Uses only ingredients in the app's ingredient bank,
+     plus sides/drinks that the importer should skip. -->
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #d9cbb0; padding: 30px; font-family: Arial, Helvetica, sans-serif; color: #2a1d14; }
+  .menu {
+    width: 860px; margin: 0 auto; background: #fbf6ea; padding: 44px 60px 40px;
+    border: 3px solid #2a1d14; box-shadow: inset 0 0 0 10px #fbf6ea, inset 0 0 0 12px #b5472f;
+  }
+  header { text-align: center; margin-bottom: 26px; }
+  header svg { width: 120px; height: 84px; }
+  h1 { font-family: Georgia, 'Times New Roman', serif; font-size: 50px; letter-spacing: 2px; margin-top: 6px; }
+  .sub { font-size: 18px; letter-spacing: 4px; color: #b5472f; margin-top: 6px; font-weight: bold; }
+  h2 {
+    font-family: Georgia, serif; font-size: 30px; letter-spacing: 3px; color: #b5472f;
+    margin: 30px 0 14px; padding-bottom: 6px; border-bottom: 3px solid #2a1d14;
+  }
+  .item { margin: 0 0 18px; }
+  .row { display: flex; align-items: baseline; gap: 12px; }
+  .name { font-size: 25px; font-weight: bold; }
+  .dots { flex: 1; border-bottom: 2px dotted #8a7a66; transform: translateY(-6px); }
+  .price { font-size: 24px; font-weight: bold; }
+  .desc { font-size: 19px; color: #4a3a2c; margin-top: 4px; }
+  .small .name { font-size: 22px; }
+  footer { text-align: center; margin-top: 30px; font-size: 16px; color: #6b5a48; }
+</style>
+</head>
+<body>
+<div class="menu" id="menu">
+  <header>
+    <svg viewBox="0 0 120 84" aria-hidden="true">
+      <path d="M14 40 Q14 6 60 6 Q106 6 106 40 Z" fill="#e3a245" stroke="#2a1d14" stroke-width="3"/>
+      <ellipse cx="44" cy="20" rx="3" ry="1.6" fill="#fff6dc"/><ellipse cx="62" cy="15" rx="3" ry="1.6" fill="#fff6dc"/><ellipse cx="78" cy="22" rx="3" ry="1.6" fill="#fff6dc"/>
+      <path d="M10 44 q8 -6 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#5aa83a" stroke-width="5" stroke-linecap="round"/>
+      <rect x="12" y="47" width="96" height="7" rx="3" fill="#f2c230" stroke="#2a1d14" stroke-width="2"/>
+      <rect x="10" y="54" width="100" height="12" rx="6" fill="#6b3a1c" stroke="#2a1d14" stroke-width="3"/>
+      <path d="M14 68 H106 V74 Q106 80 98 80 H22 Q14 80 14 74 Z" fill="#e3a245" stroke="#2a1d14" stroke-width="3"/>
+    </svg>
+    <h1>HARBOR STREET GRILL</h1>
+    <p class="sub">EST. 2026</p>
+  </header>
+
+  <h2>BURGERS</h2>
+  <div class="item"><div class="row"><span class="name">Sunrise Smash Burger</span><span class="dots"></span><span class="price">$11.99</span></div>
+    <p class="desc">American cheese, pickles and onion on a potato bun</p></div>
+
+  <h2>SIDES &amp; DRINKS</h2>
+  <div class="item small"><div class="row"><span class="name">French Fries</span><span class="dots"></span><span class="price">$3.99</span></div></div>
+  <div class="item small"><div class="row"><span class="name">Fresh Lemonade</span><span class="dots"></span><span class="price">$2.99</span></div></div>
+
+  <footer>Ask about our daily specials</footer>
+</div>
+</body>
+</html>
