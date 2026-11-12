@@ -271,7 +271,7 @@
     // Pass mark reached and no valid certificate yet → issue one. A later fail never removes it.
     let newCert = false;
     const e = Store.employee(S.emp);
-    if (score >= Store.settings().passThreshold && !certValid(e)) {
+    if (score >= Store.settings().passThreshold && !e.cert) {
       Store.setCert(S.emp, { id: certId(), date, score, timeSec, menu: RECIPES.map(r => r.id) });
       newCert = true;
     }
@@ -280,16 +280,13 @@
   }
 
   // ---------- certificate ----------
-  // A certificate covers the menu as it was the day it was earned.
-  // Items added to the menu later mean the employee must re-certify.
-  const newSinceCert = e => e.cert ? RECIPES.filter(r => !e.cert.menu.includes(r.id)) : [];
-  const certValid = e => !!e.cert && newSinceCert(e).length === 0;
+  // Earned once by passing the quiz; kept for good (a later fail or new
+  // menu items don't remove it). cert.menu records the items it covered.
   const certId = () => 'RR-' + Math.random().toString(36).slice(2, 8).toUpperCase();
 
   // ---------- status ----------
   function statusOf(e) {
-    if (certValid(e)) return ['🎓 Certified · Ready to work', 'cert'];
-    if (e.cert) return ['Re-certify: new menu items', 'warn'];
+    if (e.cert) return ['🎓 Certified · Ready to work', 'cert'];
     const thr = Store.settings().passThreshold;
     const last = e.quizzes[e.quizzes.length - 1];
     if (last) return last.score >= thr ? ['Ready', 'ready'] : ['Needs practice', 'warn'];
@@ -370,12 +367,10 @@
       </section>
 
       ${e.cert ? `
-      <section class="card cert-banner ${certValid(e) ? '' : 'stale'}">
+      <section class="card cert-banner">
         <div class="cert-banner-seal">${LOGO_RING}</div>
-        <div>${certValid(e)
-          ? `<h2>Certified · Ready to work</h2><p>Earned ${fmtDate(e.cert.date)} with ${e.cert.score}%.</p>`
-          : `<h2>Time to re-certify</h2><p>New on the menu since your certificate: <b>${newSinceCert(e).map(r => esc(r.name)).join(', ')}</b>. Pass the quiz again to stay ready.</p>`}</div>
-        <button class="btn ${certValid(e) ? 'primary' : ''}" data-act="cert" data-arg="${esc(S.emp)}">View certificate</button>
+        <div><h2>Certified · Ready to work</h2><p>Earned ${fmtDate(e.cert.date)} with ${e.cert.score}%.</p></div>
+        <button class="btn primary" data-act="cert" data-arg="${esc(S.emp)}">View certificate</button>
       </section>` : ''}
 
       <section class="quiz-cta card">
@@ -609,8 +604,7 @@
           <div><h4>Quiz history</h4>${e.quizzes.length ? `<ul>${e.quizzes.map(q => `<li>${fmtDate(q.date)}: <b>${q.score}%</b> in ${fmtTime(q.timeSec)}</li>`).join('')}</ul>` : '<p class="muted">No attempts yet.</p>'}</div>
           <div><h4>Most missed</h4>${missed.length ? `<ul>${missed.map(([id, c]) => `<li>${esc(ingName(id))} ×${c}</li>`).join('')}</ul>` : '<p class="muted">Nothing yet.</p>'}</div>
           <div><h4>Certificate</h4>${e.cert
-            ? `<p>${certValid(e) ? '🎓 Certified' : '⚠ Needs re-certifying'} ${fmtDate(e.cert.date)} · ${e.cert.score}%</p>
-               ${certValid(e) ? '' : `<p class="muted small">New items: ${newSinceCert(e).map(r => esc(r.name)).join(', ')}</p>`}
+            ? `<p>🎓 Certified ${fmtDate(e.cert.date)} · ${e.cert.score}%</p>
                <button class="btn small" data-act="cert" data-arg="${esc(n)}">View certificate</button>`
             : '<p class="muted">Not certified yet. Passing the quiz earns it.</p>'}
             <h4 class="mt">Flashcards</h4><p class="muted">${(e.flashcards || []).length} deck${(e.flashcards || []).length === 1 ? '' : 's'} finished</p></div>
@@ -627,7 +621,7 @@
 
       <section class="progress card">
         <div><b>${names.length}</b><span>Employees</span></div>
-        <div><b>${names.filter(n => certValid(all[n])).length}</b><span>Certified</span></div>
+        <div><b>${names.filter(n => all[n].cert).length}</b><span>Certified</span></div>
         <div><b>${statuses.filter(s => s === 'Needs practice').length}</b><span>Need practice</span></div>
         <div><b>${avg}${avg === '—' ? '' : '%'}</b><span>Avg latest quiz</span></div>
       </section>
@@ -639,7 +633,7 @@
           <tbody>${rows}</tbody>
         </table>
       </div>
-      <p class="muted small">Click a row for details. Passing the quiz (${set.passThreshold}%+) earns a certificate; new menu items mean re-certifying.</p>
+      <p class="muted small">Click a row for details. Passing the quiz (${set.passThreshold}%+) earns a certificate, which stays valid when new items are added.</p>
 
       <h2 class="section-h">Quiz settings</h2>
       <form id="settings-form" class="card form inline">
@@ -910,7 +904,6 @@
           </div>
         </div>
       </article>
-      ${certValid(e) ? '' : `<p class="muted center no-print">This certificate predates new menu items (${newSinceCert(e).map(r => esc(r.name)).join(', ')}). Pass the quiz again to re-certify.</p>`}
     </main>`;
   }
 

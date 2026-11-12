@@ -424,7 +424,6 @@ button { font: inherit; color: inherit; }
 .cert-banner { display: flex; align-items: center; gap: 18px; padding: 18px 22px; flex-wrap: wrap; background: #fffbea; border-color: #e8b94a; }
 .cert-banner > div:nth-child(2) { flex: 1; min-width: 220px; }
 .cert-banner p { color: var(--muted); margin-top: 4px; }
-.cert-banner.stale { background: #fff3ec; border-color: #f0a387; }
 .cert-banner-seal .logo-ring { width: 64px; height: 64px; }
 .cert-page { max-width: 980px; margin: 0 auto; padding: 20px 16px 40px; display: grid; gap: 16px; }
 .cert-tools { justify-content: space-between; }
