@@ -930,7 +930,7 @@
       <button class="appbar-brand" data-act="go" data-arg="home" aria-label="${esc(APP.name)} home">${logo('sm')}</button>
       <span class="appbar-org">${esc(RESTAURANT.name)}</span>
     </nav>`;
-  const footer = () => `<footer class="app-footer no-print">© ${APP.year} ${esc(APP.name)} · ${esc(APP.tagline)}</footer>`;
+  const footer = () => `<footer class="app-footer no-print">© ${APP.year} ${esc(APP.name)} · ${esc(APP.tagline)} · Built with AI assistance</footer>`;
 
   // =============================================================
   //  RENDER + EVENTS
