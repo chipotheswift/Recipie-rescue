@@ -7,6 +7,13 @@
 //  "Close the bun". A "sauced top bun" = the last sauce step (top:true).
 // =============================================================
 
+// The product. RESTAURANT below is the customer using it.
+const APP = {
+  name: 'Recipe Rescue',
+  tagline: 'Learn it. Practice it. Prove it.',
+  year: 2026,
+};
+
 const RESTAURANT = {
   id: 'demo-burger-co',
   name: 'Demo Burger Co.',
@@ -210,6 +217,8 @@ const DUMMY_EMPLOYEES = {
       { date: '2026-11-03T15:10:00Z', score: 81, timeSec: 102, missed: ['red_onion', 'pickles'] },
       { date: '2026-11-07T16:22:00Z', score: 96, timeSec: 71,  missed: ['special_sauce'] },
     ],
+    // Passed at 96% → certified for the menu as it was that day.
+    cert: { id: 'RR-JL7K2Q', date: '2026-11-07T16:22:00Z', score: 96, timeSec: 71, menu: ALL_IDS },
   },
   'Sam Patel': {
     tutorials: ALL_IDS, training: ALL_IDS.slice(0, 3),

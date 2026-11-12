@@ -1,6 +1,6 @@
 // =============================================================
-//  APP — screens and game logic. Plain JS, no framework.
-//  Screens: home · login · hub · kitchen · results · owner · flashcards
+//  RECIPE RESCUE — screens and game logic. Plain JS, no framework.
+//  Screens: home · login · hub · kitchen · results · owner · flashcards · certificate
 //  Kitchen modes: tutorial · training · quiz (same kitchen, different help)
 // =============================================================
 
@@ -14,6 +14,8 @@
     result: null,     // last quiz result
     ownerOpen: null,  // expanded employee row on owner page
     fc: null,         // flashcard session
+    certFor: null,    // whose certificate is open
+    certBack: 'hub',  // where the certificate's Back button goes
     imp: { status: '', error: false, busy: false, last: null }, // menu import
     timer: null,
   };
@@ -264,13 +266,30 @@
     const items = k.items.map((it, i) => ({ ...it, built: k.builds[i], ...grade(it.expected, k.builds[i]) }));
     const score = Math.round(items.reduce((a, it) => a + it.score, 0) / items.length);
     const missed = [...new Set(items.flatMap(it => it.rows.filter(r => !r.match && r.e).map(r => r.e)))];
-    Store.addQuiz(S.emp, { date: new Date().toISOString(), score, timeSec, missed });
-    S.result = { score, timeSec, items, ticketNo: k.ticketNo };
+    const date = new Date().toISOString();
+    Store.addQuiz(S.emp, { date, score, timeSec, missed });
+    // Pass mark reached and no valid certificate yet → issue one. A later fail never removes it.
+    let newCert = false;
+    const e = Store.employee(S.emp);
+    if (score >= Store.settings().passThreshold && !certValid(e)) {
+      Store.setCert(S.emp, { id: certId(), date, score, timeSec, menu: RECIPES.map(r => r.id) });
+      newCert = true;
+    }
+    S.result = { score, timeSec, items, ticketNo: k.ticketNo, newCert };
     go('results');
   }
 
+  // ---------- certificate ----------
+  // A certificate covers the menu as it was the day it was earned.
+  // Items added to the menu later mean the employee must re-certify.
+  const newSinceCert = e => e.cert ? RECIPES.filter(r => !e.cert.menu.includes(r.id)) : [];
+  const certValid = e => !!e.cert && newSinceCert(e).length === 0;
+  const certId = () => 'RR-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+
   // ---------- status ----------
   function statusOf(e) {
+    if (certValid(e)) return ['🎓 Certified · Ready to work', 'cert'];
+    if (e.cert) return ['Re-certify: new menu items', 'warn'];
     const thr = Store.settings().passThreshold;
     const last = e.quizzes[e.quizzes.length - 1];
     if (last) return last.score >= thr ? ['Ready', 'ready'] : ['Needs practice', 'warn'];
@@ -287,8 +306,9 @@
     <main class="home">
       <div class="hero">
         <div class="hero-burger">${ART.side(RECIPES[0].steps.flatMap(s => Array(s.qty || 1).fill(s.ing)), true)}</div>
-        <h1>Restaurant Trainer</h1>
-        <p class="tag">Learn the recipe. Practice the recipe. Prove you can make the recipe.</p>
+        <h1 class="home-logo">${logo('lg')}</h1>
+        <p class="tag">${esc(APP.tagline)}</p>
+        <p class="muted">Kitchen training that gets new cooks line-ready, then proves it with a certificate.</p>
       </div>
       <div class="role-cards">
         <button class="role-card" data-act="go" data-arg="login">
@@ -348,6 +368,15 @@
         <div><b>${last ? last.score + '%' : '—'}</b><span>Last quiz</span></div>
         <div><b>${e.quizzes.length}</b><span>Quiz attempts</span></div>
       </section>
+
+      ${e.cert ? `
+      <section class="card cert-banner ${certValid(e) ? '' : 'stale'}">
+        <div class="cert-banner-seal">${LOGO_RING}</div>
+        <div>${certValid(e)
+          ? `<h2>Certified · Ready to work</h2><p>Earned ${fmtDate(e.cert.date)} with ${e.cert.score}%.</p>`
+          : `<h2>Time to re-certify</h2><p>New on the menu since your certificate: <b>${newSinceCert(e).map(r => esc(r.name)).join(', ')}</b>. Pass the quiz again to stay ready.</p>`}</div>
+        <button class="btn ${certValid(e) ? 'primary' : ''}" data-act="cert" data-arg="${esc(S.emp)}">View certificate</button>
+      </section>` : ''}
 
       <section class="quiz-cta card">
         <div>
@@ -499,7 +528,7 @@
     <main class="kitchen mode-${k.mode}">
       <header class="k-top">
         <button class="btn ghost" data-act="exit">✕ Exit</button>
-        <div class="k-title"><span class="pill ${k.mode}">${modeName}</span> ${k.mode === 'quiz' ? '' : esc(r.name)}</div>
+        <div class="k-title"><span class="k-logo" title="Recipe Rescue">${LOGO_RING}</span><span class="pill ${k.mode}">${modeName}</span> ${k.mode === 'quiz' ? '' : esc(r.name)}</div>
         ${k.mode === 'quiz' ? `<div class="timer">⏱ <span id="timer">${fmtTime(Math.round((Date.now() - k.start) / 1000))}</span></div>` : '<div></div>'}
       </header>
       <section class="cabinet" aria-label="Ingredient cabinet">${cabinet}</section>
@@ -520,6 +549,12 @@
         <div><div class="eyebrow">Order #${R.ticketNo} · Results</div><h1>${pass ? 'Line ready! 🎉' : 'Keep practicing 💪'}</h1></div>
         <button class="btn primary" data-act="go" data-arg="hub">Back to menu</button>
       </header>
+      ${R.newCert ? `
+      <section class="card cert-banner">
+        <div class="cert-banner-seal">${LOGO_RING}</div>
+        <div><h2>You're certified! 🎓</h2><p>You passed at ${R.score}%. ${esc(RESTAURANT.owner)} can now see you're ready to work the line.</p></div>
+        <button class="btn primary big" data-act="cert" data-arg="${esc(S.emp)}">View certificate</button>
+      </section>` : ''}
       <section class="score-row">
         <div class="score-big ${pass ? 'pass' : 'fail'}"><b>${R.score}%</b><span>${pass ? 'PASS' : `Pass mark ${thr}%`}</span></div>
         <div class="score-big"><b>${fmtTime(R.timeSec)}</b><span>Total time</span></div>
@@ -573,6 +608,12 @@
         <div class="detail-grid">
           <div><h4>Quiz history</h4>${e.quizzes.length ? `<ul>${e.quizzes.map(q => `<li>${fmtDate(q.date)}: <b>${q.score}%</b> in ${fmtTime(q.timeSec)}</li>`).join('')}</ul>` : '<p class="muted">No attempts yet.</p>'}</div>
           <div><h4>Most missed</h4>${missed.length ? `<ul>${missed.map(([id, c]) => `<li>${esc(ingName(id))} ×${c}</li>`).join('')}</ul>` : '<p class="muted">Nothing yet.</p>'}</div>
+          <div><h4>Certificate</h4>${e.cert
+            ? `<p>${certValid(e) ? '🎓 Certified' : '⚠ Needs re-certifying'} ${fmtDate(e.cert.date)} · ${e.cert.score}%</p>
+               ${certValid(e) ? '' : `<p class="muted small">New items: ${newSinceCert(e).map(r => esc(r.name)).join(', ')}</p>`}
+               <button class="btn small" data-act="cert" data-arg="${esc(n)}">View certificate</button>`
+            : '<p class="muted">Not certified yet. Passing the quiz earns it.</p>'}
+            <h4 class="mt">Flashcards</h4><p class="muted">${(e.flashcards || []).length} deck${(e.flashcards || []).length === 1 ? '' : 's'} finished</p></div>
           <div><h4>Not yet trained</h4>${(() => { const t = RECIPES.filter(r => !e.training.includes(r.id)); return t.length ? `<ul>${t.map(r => `<li>${esc(r.name)}</li>`).join('')}</ul>` : '<p class="muted">All items trained ✓</p>'; })()}</div>
         </div></td></tr>` : ''}`;
     }).join('');
@@ -586,7 +627,7 @@
 
       <section class="progress card">
         <div><b>${names.length}</b><span>Employees</span></div>
-        <div><b>${statuses.filter(s => s === 'Ready').length}</b><span>Line ready</span></div>
+        <div><b>${names.filter(n => certValid(all[n])).length}</b><span>Certified</span></div>
         <div><b>${statuses.filter(s => s === 'Needs practice').length}</b><span>Need practice</span></div>
         <div><b>${avg}${avg === '—' ? '' : '%'}</b><span>Avg latest quiz</span></div>
       </section>
@@ -598,7 +639,7 @@
           <tbody>${rows}</tbody>
         </table>
       </div>
-      <p class="muted small">Click a row for details. Status uses the latest quiz score vs. the pass mark.</p>
+      <p class="muted small">Click a row for details. Passing the quiz (${set.passThreshold}%+) earns a certificate; new menu items mean re-certifying.</p>
 
       <h2 class="section-h">Quiz settings</h2>
       <form id="settings-form" class="card form inline">
@@ -767,6 +808,7 @@
     else f.queue.push(card); // still learning: comes back at the end
     f.seen.add(card);
     f.flipped = false;
+    if (!f.queue.length && S.emp) Store.markDone(S.emp, 'flashcards', f.deck);
     render();
   }
 
@@ -838,12 +880,70 @@
   });
 
   // =============================================================
+  //  CERTIFICATE
+  // =============================================================
+  function vCertificate() {
+    const name = S.certFor, e = Store.all()[name], c = e && e.cert;
+    if (!c) return `<main class="narrow"><p>No certificate found.</p><button class="btn" data-act="go" data-arg="${S.certBack}">Back</button></main>`;
+    const items = RECIPES.filter(r => c.menu.includes(r.id));
+    const longDate = new Date(c.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    return `
+    <main class="cert-page">
+      <div class="row no-print cert-tools">
+        <button class="btn ghost" data-act="go" data-arg="${S.certBack}">← Back</button>
+        <button class="btn primary" data-act="print">🖨 Print / Save as PDF</button>
+      </div>
+      <article class="certificate">
+        <div class="cert-inner">
+          <div class="cert-top">${logo('md')}<span class="cert-id">No. ${esc(c.id)}</span></div>
+          <div class="cert-seal">${LOGO_RING}</div>
+          <p class="cert-kicker">Certificate of Completion</p>
+          <p class="cert-small">This certifies that</p>
+          <h1 class="cert-name">${esc(name)}</h1>
+          <p class="cert-body">has completed <b>${esc(APP.name)}</b> line training at <b>${esc(RESTAURANT.name)}</b>,
+            passed the timed ticket quiz with <b>${c.score}%</b> in ${fmtTime(c.timeSec)},
+            and is <b>ready to work the burger &amp; sandwich line</b>.</p>
+          <p class="cert-items">${items.map(r => esc(r.name)).join(' · ')}</p>
+          <div class="cert-sign">
+            <div><div class="cert-line">${esc(RESTAURANT.owner)}</div><span>Owner, ${esc(RESTAURANT.name)}</span></div>
+            <div><div class="cert-line">${longDate}</div><span>Date certified</span></div>
+          </div>
+        </div>
+      </article>
+      ${certValid(e) ? '' : `<p class="muted center no-print">This certificate predates new menu items (${newSinceCert(e).map(r => esc(r.name)).join(', ')}). Pass the quiz again to re-certify.</p>`}
+    </main>`;
+  }
+
+  // =============================================================
+  //  BRAND (Recipe Rescue): logo, app bar, footer, tab title
+  // =============================================================
+  const LOGO_RING = `<svg class="logo-ring" viewBox="0 0 64 64" aria-hidden="true">
+    <circle cx="32" cy="32" r="26" fill="none" stroke="#fff" stroke-width="11"/>
+    <circle cx="32" cy="32" r="26" fill="none" stroke="#e0452c" stroke-width="11" stroke-dasharray="20.4 20.4" transform="rotate(-35 32 32)"/>
+    <circle cx="32" cy="32" r="31.5" fill="none" stroke="#2b1a10" stroke-width="1.5"/><circle cx="32" cy="32" r="20.5" fill="none" stroke="#2b1a10" stroke-width="1.5"/>
+    <path d="M20 30.5a12 9.5 0 0 1 24 0z" fill="#e8a23c" stroke="#2b1a10" stroke-width="1.2"/>
+    <rect x="19.5" y="32" width="25" height="4.6" rx="2.3" fill="#5a3214"/>
+    <rect x="20" y="37.6" width="24" height="3.6" rx="1.8" fill="#e8a23c" stroke="#2b1a10" stroke-width="1.2"/>
+  </svg>`;
+  const logo = (size = 'md') => `<span class="logo logo-${size}">${LOGO_RING}<span class="logo-word">Recipe <b>Rescue</b></span></span>`;
+
+  const TITLES = { home: '', login: 'Sign in', hub: 'My training', kitchen: 'Kitchen', results: 'Quiz results', owner: 'Owner dashboard', flashcards: 'Flashcards', certificate: 'Certificate' };
+  const appBar = () => `
+    <nav class="appbar no-print">
+      <button class="appbar-brand" data-act="go" data-arg="home" aria-label="${esc(APP.name)} home">${logo('sm')}</button>
+      <span class="appbar-org">${esc(RESTAURANT.name)}</span>
+    </nav>`;
+  const footer = () => `<footer class="app-footer no-print">© ${APP.year} ${esc(APP.name)} · ${esc(APP.tagline)}</footer>`;
+
+  // =============================================================
   //  RENDER + EVENTS
   // =============================================================
-  const VIEWS = { home: vHome, login: vLogin, hub: vHub, kitchen: vKitchen, results: vResults, owner: vOwner, flashcards: vFlashcards };
+  const VIEWS = { home: vHome, login: vLogin, hub: vHub, kitchen: vKitchen, results: vResults, owner: vOwner, flashcards: vFlashcards, certificate: vCertificate };
 
   function render() {
-    $app.innerHTML = VIEWS[S.screen]();
+    const full = S.screen === 'kitchen'; // the game keeps the whole screen
+    $app.innerHTML = (full || S.screen === 'home' ? '' : appBar()) + VIEWS[S.screen]() + (full ? '' : footer());
+    document.title = TITLES[S.screen] ? `${TITLES[S.screen]} · ${APP.name}` : `${APP.name} · ${APP.tagline}`;
     if (S.screen === 'kitchen') {
       const k = S.k;
       if (k.drawerAnim) {
@@ -886,6 +986,8 @@
     submit: () => submitQuiz(),
     exit: () => go('hub'),
     'fc-start': deck => startFlashcards(deck),
+    cert: name => { S.certBack = S.screen === 'certificate' ? S.certBack : S.screen; S.certFor = name; go('certificate'); },
+    print: () => window.print(),
     'fc-flip': () => fcFlip(),
     'fc-grade': v => fcGrade(v === '1'),
     'owner-row': n => { S.ownerOpen = S.ownerOpen === n ? null : n; render(); },

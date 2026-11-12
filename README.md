@@ -1,6 +1,10 @@
-# Restaurant Trainer
+# Recipe Rescue
 
-Browser game that teaches new line cooks to build menu items: **Tutorial → Training → Quiz**, plus a (simulated) owner dashboard.
+*Learn it. Practice it. Prove it.*
+
+Browser game that teaches new line cooks to build menu items: **Tutorial → Training → Quiz → Certificate**, plus an owner dashboard that shows who is certified and ready to work. (Owner side uses demo data for now.)
+
+Brand lives in `APP` in `js/data.js` (name, tagline, year); the logo is an SVG lifebuoy with a burger, defined in `js/app.js` (`LOGO_RING`) and as the tab icon in `index.html`. "Demo Burger Co." is the *restaurant* using Recipe Rescue (`RESTAURANT`).
 
 ## Run it
 Double-click `index.html`. No install, no build step, no server.
@@ -26,6 +30,8 @@ Double-click `index.html`. No install, no build step, no server.
 - Quiz: 1 ticket, 2 items (owner can change), timed, no hints, **no undo**, results only at the end.
 - Scoring (placeholder): layer-by-layer match vs. expected stack, averaged across items. Pass mark 90%.
 - Flashcards: per item or whole menu (shuffled). One card per step ("After X, what goes on next?" → answer + why) plus a "full build" card. *Still learning* sends the card to the back of the deck. Generated from `RECIPES`, so they can't drift from the game.
+- Certificate: passing the quiz at the pass mark (90%) earns one: printable / Save as PDF, with name, restaurant, score, time, date, owner signature line and certificate number. The owner sees **🎓 Certified · Ready to work**. A later failed quiz does **not** remove it. If the owner adds menu items after it was earned, the employee shows **Re-certify: new menu items** until they pass the quiz again.
+- Owner dashboard: per employee tutorials, training, quiz attempts, latest score/time, status, certificate (with link), flashcard decks finished, most-missed ingredients, items not yet trained.
 - Menu import (owner page): photo, PDF or pasted text. Each burger/sandwich goes live immediately in a **standard build order** (bun → bottom sauce → protein → cheese → bacon → toppings → top sauce), using only ingredients the menu names plus a bun and protein. Marked *Auto-generated* until the owner reorders or removes a step (*Adjusted by owner*; *Reset to standard* undoes it). Ingredients not in the ingredient bank (e.g. ranch) are left out. Items already on the menu are skipped. Works offline after the first import; nothing is uploaded.
 
 ## Menu: changes from the Kitchen Training Manual
@@ -66,3 +72,4 @@ Every change is saved as a git commit, and each milestone gets a tag (`v0.3-chef
 | `v0.3-chef` | Full game + Chef Marco feedback mentor, plain-English messages. First snapshot (earlier steps were built before versioning). |
 | `v0.4-flashcards` | Adds flashcards (per item or whole menu, keyboard shortcuts, retry queue). |
 | `v0.5-menu-import` | Owner menu import from photo/PDF/text, standard build order, owner reorder + reset. |
+| `v0.6-recipe-rescue` | Renamed to Recipe Rescue (logo, tab icon/title, app bar, footer). Quiz pass earns a printable certificate; owner sees Certified · Ready to work; re-certify after new menu items; flashcard decks tracked. |

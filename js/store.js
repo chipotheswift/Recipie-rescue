@@ -36,9 +36,13 @@ const Store = (() => {
 
     markDone(name, kind, recipeId) {
       const e = ensure(name);
-      if (!e[kind].includes(recipeId)) e[kind].push(recipeId);
+      const list = (e[kind] = e[kind] || []); // older records may lack a list (e.g. flashcards)
+      if (!list.includes(recipeId)) list.push(recipeId);
       save();
     },
+
+    // Certificate: earned by passing the quiz. Never taken away by a later fail.
+    setCert(name, cert) { ensure(name).cert = cert; save(); },
 
     addQuiz(name, record) {
       ensure(name).quizzes.push(record);
